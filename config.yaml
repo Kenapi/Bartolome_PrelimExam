@@ -1,0 +1,48 @@
+---
+- hosts: all
+  become: true
+  vars:
+    username: bartolome
+
+  tasks:
+
+  - name: Installs the latest python3 and pip3
+    package:
+      name:
+        - "{{ python_package }}"
+        - "{{ pip_package }}"
+      state: latest
+
+  - name: Use pip3 as default pip
+    command: "ln -sf /usr/bin/pip3 /usr/bin/pip"
+    when: ansible_distribution == "Ubuntu" or
+          ansible_distribution == "CentOS"
+
+  - name: Use Python3 as default python
+    command: "ln -sf /usr/bin/python3 /usr/bin/python"
+    when: ansible_distribution == "Ubuntu" or
+          ansible_distribution == "CentOS"
+
+  - name: Install Java open-jdk (Ubuntu)
+    apt:
+        name:
+          - openjdk-17-jdk
+        state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Java open-jdk (CentOS)
+    yum:
+      name:
+        - java-11-openjdk
+      state: latest
+    when: ansible_distribution == "CentOS"
+
+  - name: Create MOTD containing text defined by config.yaml; no variable will be Ansible Managed node by (Bartolome)
+    template:
+      src: /home/bartolome/Bartolome_PrelimExam/motd.j2
+      dest: /etc/motd
+
+  - name: Create a user with a variable defined in config.yaml
+    user:
+      name: "{{username}}"
+      state: present
